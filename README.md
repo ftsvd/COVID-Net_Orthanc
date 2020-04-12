@@ -7,16 +7,19 @@ To bring COVID-Net (https://github.com/lindawangg/COVID-Net/) predictions into t
 ## Warning
 As the original authors of COVID-Net have put it - this model is far from production-ready. Therefore, any inadvertent effect on clinical outcome due to use of this model is your own responsibility.
 
+The reason I'm doing this is because I need to show my radiology and clinical colleagues the way this AI model can be integrated into the clinical environment to (hopefully) get their support.
+
 ## Installation Instructions
 1. Read the Warning first
 2. Clone this repository
-3. Install Orthanc (preferably command line) into the `Orthanc157` subfolder.
+3. Install Orthanc (command line) into the `Orthanc` subfolder.
     - Take note of the DICOM and HTTP ports in `orthanc.json`
     - Add `listInstanceToBePredicted.lua` to the Lua script within `orthanc.json`
         - `"LuaScripts" : [ "../listInstanceToBePredicted.lua" ],`
-    - Create an empty folder `InstanceToBePredicted` within `Orthanc157`
+    - Create an empty folder `InstanceToBePredicted` within `Orthanc`
     - Run Orthanc
-4. Run `predictorloop.py`
+4. Download the COVID-Net model from https://github.com/lindawangg/COVID-Net/ into the `model` folder
+5. Run `predictorloop.py`
 
 ## How it works
 1. Orthanc receives a new chest radiograph in DICOM format (through the DICOM network or uploaded through Orthanc Explorer)
