@@ -18,7 +18,8 @@ The reason I'm doing this is because I need to show my radiology and clinical co
         - `"LuaScripts" : [ "../listInstanceToBePredicted.lua" ],`
     - Create an empty folder `InstanceToBePredicted` within `Orthanc`
     - Run Orthanc
-4. Run `predictorloop.py`
+4. Download the COVID-Net model from https://github.com/lindawangg/COVID-Net/ into the `model` folder
+5. Run `predictorloop.py`
 
 ## How it works
 1. Orthanc receives a new chest radiograph in DICOM format (through the DICOM network or uploaded through Orthanc Explorer)
