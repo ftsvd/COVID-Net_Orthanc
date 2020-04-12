@@ -7,6 +7,8 @@ To bring COVID-Net (https://github.com/lindawangg/COVID-Net/) predictions into t
 ## Warning
 As the original authors of COVID-Net have put it - this model is far from production-ready. Therefore, any inadvertent effect on clinical outcome due to use of this model is your own responsibility.
 
+The reason I'm doing this is because I need to show my radiology and clinical colleagues the way this AI model can be integrated into the clinical environment to (hopefully) get their support.
+
 ## Installation Instructions
 1. Read the Warning first
 2. Clone this repository
