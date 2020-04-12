@@ -10,11 +10,11 @@ As the original authors of COVID-Net have put it - this model is far from produc
 ## Installation Instructions
 1. Read the Warning first
 2. Clone this repository
-3. Install Orthanc (preferably command line) into the `Orthanc157` subfolder.
+3. Install Orthanc (command line) into the `Orthanc` subfolder.
     - Take note of the DICOM and HTTP ports in `orthanc.json`
     - Add `listInstanceToBePredicted.lua` to the Lua script within `orthanc.json`
         - `"LuaScripts" : [ "../listInstanceToBePredicted.lua" ],`
-    - Create an empty folder `InstanceToBePredicted` within `Orthanc157`
+    - Create an empty folder `InstanceToBePredicted` within `Orthanc`
     - Run Orthanc
 4. Run `predictorloop.py`
 
