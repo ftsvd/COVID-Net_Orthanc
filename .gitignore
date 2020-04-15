@@ -1,4 +1,6 @@
 model/
+model_small/
+model_large/
 orthanc/Configuration/
 orthanc/Logs/
 orthanc/Plugins/
@@ -15,5 +17,6 @@ orthanc/OrthancService.exe
 orthanc/Osimis.ico
 orthanc/PatchDefaultConfiguration.exe
 orthanc/README.txt
+orthanc/routeBackToVia.lua
 orthanc/unins000.dat
 orthanc/unins000.exe

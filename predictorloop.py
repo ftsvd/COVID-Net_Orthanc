@@ -23,14 +23,14 @@ weightspath = "model"
 # Name of ckpt meta file
 metaname = "model.meta_eval" 
 # Name of model ckpts
-ckptname = "model-6207"
+ckptname = "model-2069"
 
 # COVID-Net model prediction mapping
 mapping = {'normal': 0, 'pneumonia': 1, 'COVID-19': 2}
 reversemapping = {0: 'normal', 1: 'pneumonia', 2: 'COVID-19'}
 
 # These are required tags for pushing new DICOM instance holding the prediction into PACS
-mandatorytags = ["PatientName", "PatientID", "SOPClassUID", "SOPInstanceUID", "Modality", "SeriesDescription", "StudyDate", "SeriesDate", "StudyTime", "SeriesTime", "SpecificCharacterSet", "ImageType", "AcquisitionDate", "AcquisitionTime", "ContentDate", "ContentTime", "InstanceCreationDate", "InstanceCreationTime", "StudyInstanceUID", "SeriesInstanceUID", "AccessionNumber", "ConversionType", "Manufacturer", "PatientBirthDate", "PatientSex", "ReferringPhysician", "DeviceSerialNumber", "SeriesNumber", "InstanceNumber", "PatientOrientation", "Laterality", "PixelData"]
+mandatorytags = ["PatientName", "PatientID", "SOPClassUID", "SOPInstanceUID", "Modality", "ConversionType", "StationName", "StudyDescription", "SeriesDescription", "NameOfPhysiciansReadingStudy", "StudyDate", "SeriesDate", "StudyTime", "SeriesTime", "DateOfSecondaryCapture", "TimeOfSecondaryCapture", "SpecificCharacterSet", "ImageType", "AcquisitionDate", "AcquisitionTime", "ContentDate", "ContentTime", "StudyID", "InstanceCreationDate", "InstanceCreationTime", "StudyInstanceUID", "SeriesInstanceUID", "AccessionNumber", "ConversionType", "Manufacturer", "ManufacturerModelName", "PatientBirthDate", "PatientSex", "ReferringPhysicianName", "DeviceSerialNumber", "SeriesNumber", "InstanceNumber", "PatientOrientation", "Laterality", "NumberOfFrames", "PixelData"]
 
 def eval(sess, graph, orthancinstance):
     image_tensor = graph.get_tensor_by_name("input_1:0")
@@ -45,15 +45,23 @@ def eval(sess, graph, orthancinstance):
     newtags = dict()
     for tag in mandatorytags:
         # create empty tags if original DICOM file does not have that tag
-        if not tag in originaltags:
-            originaltags[tag] = ""
-        newtags[tag] = originaltags[tag]
+        # if not tag in originaltags:
+        #     originaltags[tag] = ""
+        # newtags[tag] = originaltags[tag]
+        
+        # create new tags only if exist in both mandatory tags and original tags
+        if tag in originaltags:
+            newtags[tag] = originaltags[tag]
+        
     # modify instance-specific tags to allow predictions to be displayed within the same study in PACS
+    newtags["SOPClassUID"] = "1.2.840.10008.5.1.4.1.1.7"
     newtags["SeriesInstanceUID"] = newtags["SeriesInstanceUID"] + ".1"
     newtags["SeriesDescription"] = "COVID-Net Prediction"
     newtags["SOPInstanceUID"] = newtags["SOPInstanceUID"] + ".1"
     newtags["Modality"] = "OT"
-
+    newtags["ConversionType"] = "WSD"
+    newtags["ReferringPhysicianName"] = "ReferringPhysicianName"
+    
     # LOAD PNG FROM URL
     url = orthanc + "instances/" + orthancinstance + "/preview"
     resp = urlopen(url)
@@ -65,8 +73,7 @@ def eval(sess, graph, orthancinstance):
     x = x.astype('float32') / 255.0
 
     # PREDICT FROM PNG
-    pred = np.array(sess.run(pred_tensor, feed_dict={image_tensor: np.expand_dims(x, axis=0)})).argmax(axis=1)
-    pred = pred.astype(int)[0]
+    pred = sess.run(pred_tensor, feed_dict={image_tensor: np.expand_dims(x, axis=0)})
 
     # PUSH PREDICTION TO ORTHANC
     # start pixeldata with black blank image
@@ -84,7 +91,17 @@ def eval(sess, graph, orthancinstance):
     image = cv2.putText(image, newtags["PatientName"], (10, 310), font, fontScale, color, thickness, cv2.LINE_AA)
     image = cv2.putText(image, newtags["PatientID"], (10, 330), font, fontScale, color, thickness, cv2.LINE_AA)
     image = cv2.putText(image, newtags["StudyDate"], (10, 350), font, fontScale, color, thickness, cv2.LINE_AA)
-    image = cv2.putText(image, "Prediction: " + reversemapping[pred], (10, 390), font, fontScale, color, thickness, cv2.LINE_AA)
+    #image = cv2.putText(image, "Prediction: " + reversemapping[pred], (10, 390), font, fontScale, color, thickness, cv2.LINE_AA)
+    image = cv2.putText(image, 'Prediction: {}'.format(inv_mapping[pred.argmax(axis=1)[0]]), (10, 390), font, fontScale, color, thickness, cv2.LINE_AA)
+    image = cv2.putText(image, 'Confidence: ', (10, 410), font, fontScale, color, thickness, cv2.LINE_AA)
+    image = cv2.putText(image, 'Normal: {:.3f}, Pneumonia: {:.3f}, COVID-19: {:.3f}'.format(pred[0][0], pred[0][1], pred[0][2]), (10, 430), font, fontScale, color, thickness, cv2.LINE_AA)
+    image = cv2.putText(image, "Model: " + ckptname, (10, 470), font, fontScale, color, thickness, cv2.LINE_AA)
+    
+    # output
+    print('Prediction: {}'.format(inv_mapping[pred.argmax(axis=1)[0]]))
+    print('Confidence')
+    print('Normal: {:.3f}, Pneumonia: {:.3f}, COVID-19: {:.3f}'.format(pred[0][0], pred[0][1], pred[0][2]))
+    
     # encode image to base64
     retval, buffer= cv2.imencode('.png', image)
     imageb64 = base64.b64encode(buffer)
