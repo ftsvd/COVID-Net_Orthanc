@@ -8,8 +8,15 @@ function OnStoredInstance(instanceId, tags, metadata)
   end
 
   if tags["SeriesDescription"] == "COVID-Net Prediction" then
-	print("Routing: " .. tags["SeriesDescription"])
-    SendToModality(instanceId, 'VIA102077')
+	response = nil
+	attempt = 0
+	while (response == nil)
+	do
+		print("Routing Using POST:" .. tags["SeriesDescription"] .. "(Attempt: " .. attempt .. ")")
+		response = RestApiPost("/modalities/PLAZASERVER/store", instanceId)
+		print(response)
+		attempt = attempt + 1
+	end
   end  
 
 end
